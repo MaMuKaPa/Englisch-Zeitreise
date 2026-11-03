@@ -4,7 +4,7 @@
 <h2>1. Verantwortliche Stelle</h2>
 <p>Karin Packhäuser, Sekundarschule Leichlingen, Am Hammer 1, 42799 Leichlingen <br>E-Mail: karin.packhaeuser@199461.nrw.schule </p>
 <h2>2. Worum geht es?</h2>
-<p>„Bruch-Helden“ ist eine Übungsseite zum Thema Brüche. Sie kann ohne Anmeldung genutzt werden. Du musst weder einen Namen noch eine E-Mail-Adresse eingeben.</p>
+<p>„Englisch-Zeitreise“ ist eine Übungsseite zum Thema regelmäßige und unregelmäßige Verben. Sie kann ohne Anmeldung genutzt werden. Du musst weder einen Namen noch eine E-Mail-Adresse eingeben.</p>
 <h2>3. Was die Seite selbst nicht tut</h2>
 <ul><li>Es werden keine Cookies gesetzt.</li><li>Es gibt keine Nutzerkonten, keine Statistik und kein Tracking.</li><li>Es werden keine Inhalte von fremden Servern nachgeladen (z. B. keine Schriften oder Skripte).</li><li>Deine Antworten und Punkte werden nicht an uns gesendet. Alles passiert in deinem Browser.</li></ul>
 <h2>4. Spielstand-Code</h2>
