@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time-Warp: The Verb Repair Mission</title>
+<style>
+:root{--bg:#0d0b1e;--card:#171433;--line:#2e2a5e;--txt:#f1efff;--dim:#a7a3d6;--cy:#3df5e0;--pk:#ff4fa3;--ye:#ffd23f;--ok:#46e08a;--bad:#ff5c6c}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(circle at 20% 0,#241a5a 0,var(--bg) 55%);color:var(--txt);font:17px/1.55 "Trebuchet MS","Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;min-height:100vh}
+header{padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+header b{font-size:1.05rem;letter-spacing:.5px}
+.xp{color:var(--ye);font-weight:700}
+.bar{height:10px;background:#221e4d;border-radius:9px;overflow:hidden;flex:1 1 100%}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cy),var(--pk));transition:width .5s}
+main{flex:1;width:100%;max-width:680px;margin:0 auto;padding:22px 16px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:22px}
+h1{font-size:2rem;line-height:1.15;margin:.2em 0 .4em;color:var(--cy)}
+h2{font-size:1.4rem;margin:.2em 0 .5em;color:var(--cy)}
+.story{border-left:4px solid var(--pk);padding:4px 14px;margin:14px 0;font-style:italic;color:#ffd9ec}
+.dim{color:var(--dim);font-size:.92rem}
+button{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:12px;padding:12px 22px;margin:8px 8px 0 0;background:var(--cy);color:#07202a}
+button.alt{background:transparent;color:var(--cy);border:2px solid var(--cy)}
+button:hover{filter:brightness(1.1)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--ye);outline-offset:2px}
+.q{font-size:1.35rem;margin:10px 0 14px}
+.q small{color:var(--dim);font-size:.95rem}
+label{display:block;margin:10px 0 4px;color:var(--dim);font-size:.9rem}
+input{width:100%;font:inherit;font-size:1.15rem;padding:11px 14px;border-radius:12px;border:2px solid var(--line);background:#0f0d27;color:var(--txt)}
+input.ok{border-color:var(--ok)}
+input.no{border-color:var(--bad)}
+.fb{margin-top:14px;padding:12px 14px;border-radius:12px;background:#0f0d27}
+.fb.ok{border:2px solid var(--ok)}
+.fb.no{border:2px solid var(--bad)}
+.tag{display:inline-block;padding:2px 12px;border-radius:20px;background:var(--pk);color:#fff;font-size:.85rem;font-weight:700;margin-bottom:6px}
+.code{font:700 2rem/1.2 "Courier New",monospace;color:var(--ye);background:#0f0d27;border:2px dashed var(--ye);border-radius:14px;padding:16px;text-align:center;margin:16px 0;letter-spacing:2px}
+ul.res{list-style:none;padding:0}
+ul.res li{padding:8px 0;border-bottom:1px solid var(--line)}
+footer{padding:16px;text-align:center;border-top:1px solid var(--line);color:var(--dim);font-size:.9rem}
+footer a{color:var(--cy);margin:0 10px}
+@media(max-width:480px){h1{font-size:1.6rem}.code{font-size:1.4rem}}
+</style>
+</head>
+<body>
+<header>
+  <b>⏳ TIME-WARP</b><span class="xp" id="xp"></span>
+  <div class="bar" aria-label="Reparaturfortschritt"><i id="prog"></i></div>
+</header>
+<main id="app"><noscript>Bitte aktiviere JavaScript, um das Spiel zu spielen.</noscript></main>
+<footer>
+  <a href="datenschutz.html">Datenschutzerklärung</a>|<a href="impressum.html">Impressum</a>
+  <div>Dieses Spiel nutzt keine Cookies und speichert nichts auf dem Gerät.</div>
+</footer>
+<script>
+// ---------- DATEN ----------
+// [Infinitiv, Past Simple, Past Participle, Deutsch]; Alternativen mit |
+const IRR=[
+["begin","began","begun","beginnen","D"],["bite","bit","bitten","beißen","D"],["blow","blew","blown","wehen, blasen","D"],["choose","chose","chosen","wählen","D"],["fly","flew","flown","fliegen","D"],["forgive","forgave","forgiven","vergeben","D"],["freeze","froze","frozen","frieren","D"],["grow","grew","grown","wachsen","D"],["ring","rang","rung","klingeln, läuten","D"],["shake","shook","shaken","schütteln","D"],["sing","sang","sung","singen","D"],["sink","sank","sunk","sinken","D"],["throw","threw","thrown","werfen","D"],["wear","wore","worn","tragen (Kleidung)","D"],
+["build","built","built","bauen","Z"],["feed","fed","fed","füttern","Z"],["feel","felt","felt","fühlen","Z"],["fight","fought","fought","kämpfen","Z"],["hold","held","held","halten","Z"],["keep","kept","kept","behalten","Z"],["lay","laid","laid","legen","Z"],["lead","led","led","führen","Z"],["leave","left","left","verlassen","Z"],["lend","lent","lent","leihen, verleihen","Z"],["make","made","made","machen","Z"],["mean","meant","meant","bedeuten","Z"],["pay","paid","paid","bezahlen","Z"],["sell","sold","sold","verkaufen","Z"],["understand","understood","understood","verstehen","Z"],
+["cost","cost","cost","kosten","T"],["set","set","set","setzen, einstellen","T"],["shut","shut","shut","schließen","T"],
+["be","was|were","been","sein","D"],["break","broke","broken","brechen","D"],["do","did","done","tun","D"],["draw","drew","drawn","zeichnen","D"],["drink","drank","drunk","trinken","D"],["drive","drove","driven","fahren","D"],["eat","ate","eaten","essen","D"],["fall","fell","fallen","fallen","D"],["forget","forgot","forgotten","vergessen","D"],["give","gave","given","geben","D"],["go","went","gone","gehen","D"],["hide","hid","hidden","verstecken","D"],["know","knew","known","wissen","D"],["lie","lay","lain","liegen","D"],["ride","rode","ridden","reiten","D"],["see","saw","seen","sehen","D"],["speak","spoke","spoken","sprechen","D"],["steal","stole","stolen","stehlen","D"],["swim","swam","swum","schwimmen","D"],["take","took","taken","nehmen","D"],["wake (up)","woke|woke up","woken|woken up","aufwachen","D"],["write","wrote","written","schreiben","D"],
+["bend","bent","bent","beugen","Z"],["bring","brought","brought","bringen","Z"],["buy","bought","bought","kaufen","Z"],["catch","caught","caught","fangen","Z"],["dig","dug","dug","graben","Z"],["find","found","found","finden","Z"],["get","got","got|gotten","bekommen","Z"],["hang","hung","hung","hängen","Z"],["have","had","had","haben","Z"],["hear","heard","heard","hören","Z"],["lose","lost","lost","verlieren","Z"],["meet","met","met","treffen","Z"],["say","said","said","sagen","Z"],["send","sent","sent","senden","Z"],["shoot","shot","shot","schießen","Z"],["sit","sat","sat","sitzen","Z"],["sleep","slept","slept","schlafen","Z"],["spend","spent","spent","verbringen, ausgeben","Z"],["stand","stood","stood","stehen","Z"],["teach","taught","taught","lehren, unterrichten","Z"],["tell","told","told","erzählen","Z"],["think","thought","thought","denken","Z"],["win","won","won","gewinnen","Z"],
+["cut","cut","cut","schneiden","T"],["hit","hit","hit","schlagen","T"],["hurt","hurt","hurt","verletzen","T"],["let","let","let","lassen","T"],["put","put","put","legen, stellen","T"],["read","read","read","lesen (gesprochen: /red/)","T"],
+["become","became","become","werden","S"],["come","came","come","kommen","S"],["run","ran","run","laufen","S"]];
+// [Infinitiv, Past, Typ, Deutsch]
+const REG=[["open","opened","ed","öffnen"],["start","started","ed","starten"],["ask","asked","ed","fragen"],["call","called","ed","anrufen"],["cook","cooked","ed","kochen"],["look","looked","ed","schauen"],["move","moved","d","umziehen, bewegen"],["agree","agreed","d","zustimmen"],["copy","copied","y","kopieren"],["worry","worried","y","sich sorgen"],["jog","jogged","dbl","joggen"],["chat","chatted","dbl","plaudern"],["destroy","destroyed","vy","zerstören"],["play","played","vy","spielen"],["watch","watched","ed","schauen"],["listen","listened","ed","zuhören"],["visit","visited","ed","besuchen"],["work","worked","ed","arbeiten"],["help","helped","ed","helfen"],["jump","jumped","ed","springen"],["clean","cleaned","ed","putzen"],["walk","walked","ed","gehen, laufen"],["want","wanted","ed","wollen"],["stay","stayed","vy","bleiben"],["enjoy","enjoyed","vy","genießen"],["dance","danced","d","tanzen"],["live","lived","d","leben"],["like","liked","d","mögen"],["hope","hoped","d","hoffen"],["stop","stopped","dbl","anhalten"],["plan","planned","dbl","planen"],["drop","dropped","dbl","fallen lassen"],["shop","shopped","dbl","einkaufen"],["study","studied","y","lernen"],["try","tried","y","versuchen"],["carry","carried","y","tragen"],["hurry","hurried","y","sich beeilen"],["cry","cried","y","weinen"]];
+const SP=[["learn","learned","learnt","lernen"],["burn","burned","burnt","brennen"],["dream","dreamed","dreamt","träumen"]];
+const RTIP={ed:"Einfach <b>-ed</b> anhängen.",d:"Das Verb endet schon auf <b>-e</b> → nur <b>-d</b> anhängen.",dbl:"Kurzer Vokal + ein Konsonant am Ende → Konsonant <b>verdoppeln</b> + -ed.",y:"Konsonant + <b>y</b> → das y wird zu <b>-ied</b>.",vy:"Vokal + y (a, e, o) → das y bleibt, einfach <b>-ed</b> anhängen."};
+// [Satz, Lösung, Zeit] ps = Past Simple, pp = Present Perfect
+const CTX=[["Last year we ___ (fly) to Italy.","flew","ps"],["She has ___ (choose) a blue dress.","chosen","pp"],["The film ___ (begin) at eight o'clock yesterday.","began","ps"],["Have you ___ (sing) in a choir before?","sung","pp"],["Have you ___ (make) your bed yet?","made","pp"],["He ___ (leave) the room two minutes ago.","left","ps"],["I have ___ (keep) your secret.","kept","pp"],["She ___ (feel) sick after the party.","felt","ps"],["We have ___ (pay) for the tickets.","paid","pp"],["They ___ (sell) their old bikes last week.","sold","ps"],["The Romans ___ (build) a long wall.","built","ps"],["I have ___ (grow) three centimetres this year.","grown","pp"],["Tom ___ (throw) the ball over the fence.","threw","ps"],["She has ___ (wear) that coat all winter.","worn","pp"],["The ship ___ (sink) in 1912.","sank","ps"],["Oh no! The little boat has ___ (sink).","sunk","pp"],["Yesterday I ___ (go) to the museum.","went","ps"],["She has ___ (write) three emails today.","written","pp"],["We ___ (see) a dinosaur last week!","saw","ps"],["Have you ever ___ (eat) sushi?","eaten","pp"],["He ___ (take) the red key two minutes ago.","took","ps"],["I have ___ (buy) a new backpack.","bought","pp"],["They ___ (be) in London last summer.","were","ps"],["She has ___ (be) to Berlin twice.","been","pp"],["My dad ___ (make) pancakes on Sunday.","made","ps"],["Look! Tom has ___ (break) the window.","broken","pp"],["We ___ (have) lunch at school yesterday.","had","ps"],["I haven't ___ (do) my homework yet.","done","pp"],["Anna ___ (give) me a present for my birthday.","gave","ps"],["The robot has ___ (steal) my phone!","stolen","pp"],["He ___ (come) home late last night.","came","ps"],["Have you ___ (find) the key?","found","pp"],["She ___ (hide) the key in the cave last night.","hid","ps"],["We have ___ (drink) all the water.","drunk","pp"]];
+const MIX=[["She ___ (choose) the red button yesterday.","chose","ps"],["We have ___ (fly) over the Neon City.","flown","pp"],["The movie ___ (start) at six o'clock.","started","ps"],["He has ___ (sell) his time machine.","sold","pp"],["I have ___ (open) the secret door.","opened","pp"],["They ___ (build) a robot last week.","built","ps"],["Have you ___ (hear) that sound?","heard","pp"],["She ___ (throw) the key into the river.","threw","ps"],["The boys have ___ (jog) around the park.","jogged","pp"],["My sister ___ (worry) about the test yesterday.","worried","ps"],["He ___ (leave) his bag on the train.","left","ps"],["They have ___ (begin) the final level.","begun","pp"],["The robot ___ (ask) me a strange question.","asked","ps"],["I have ___ (keep) the map in my pocket.","kept","pp"],["Yesterday we ___ (visit) the Science Museum.","visited","ps"],["She has ___ (study) for the test all week.","studied","pp"],["The bus ___ (stop) at the corner ten minutes ago.","stopped","ps"],["They have ___ (play) football since three o'clock.","played","pp"],["He ___ (buy) a ticket to the future yesterday.","bought","ps"],["Have you ___ (watch) this film before?","watched","pp"],["We ___ (go) to the Neon City by time machine.","went","ps"],["The robot has ___ (take) our map!","taken","pp"],["My sister ___ (try) the new game last Friday.","tried","ps"],["I have ___ (write) a letter to my future self.","written","pp"],["She ___ (carry) the heavy bag home.","carried","ps"],["Oh no! I have ___ (lose) my key.","lost","pp"],["We ___ (listen) to music on the train last night.","listened","ps"],["He has ___ (see) the neon lights.","seen","pp"],["They ___ (plan) a trip to the year 3000.","planned","ps"],["Mia has ___ (be) a hero since Monday.","been","pp"],["The kids ___ (dance) all night.","danced","ps"],["I ___ (speak) to the robot yesterday.","spoke","ps"],["Have you ___ (do) the last task?","done","pp"],["The scientist ___ (work) in the lab last Friday.","worked","ps"]];
+
+const Z=[
+{n:"The Echo Chamber",e:"🔊",st:"Your voice bounces off the walls: 'Go... went... gone...' The first gear of the time machine only turns if you know ALL three forms of the verbs!",ins:"Zu jedem Infinitiv gibst du die <b>2. Form (Past Simple)</b> und die <b>3. Form (Past Participle)</b> ein. Du übst <b>alle 86 Verben</b> in <b>15 Runden mit je 6 Verben</b>. Nach Runde 3, 6, 9 und 12 bekommst du einen Zwischen-Code. Danach folgt der Portal-Check."},
+{n:"The Context Cave",e:"🕳️",st:"Deep in the cave, glowing sentences float in the dark. Some words are missing! Fill the gaps to light the way.",ins:"Setze die richtige Form ein: <b>Past Simple</b> (z. B. <i>yesterday</i>) oder <b>Present Perfect</b> (<i>have/has</i> + 3. Form). Das Tipp-Feld hilft dir."},
+{n:"The Regular Forest",e:"🌲",st:"The trees whisper strange endings: -ed, -d, -ied... Spell the verbs correctly and the forest opens a path!",ins:"Bei regelmäßigen Verben sind Past Simple und Past Participle <b>gleich</b>. Achte auf die Rechtschreibung: <i>stopped</i>, <i>studied</i>, <i>danced</i>! Bei <i>learn</i>, <i>burn</i> und <i>dream</i> sind <b>zwei Formen</b> richtig, eine reicht."},
+{n:"The Neon City",e:"🌆",st:"Neon signs flash everywhere. The last part of the engine is hidden in the city. Regular and irregular verbs are mixed up. You can do it!",ins:"Jetzt kommt alles gemischt: regelmäßige und unregelmäßige Verben im Satz. Denk an die Signalwörter!"}
+];
+
+// ---------- HILFSFUNKTIONEN ----------
+const $=s=>document.querySelector(s);
+const app=$("#app");
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=s=>s.toLowerCase().replace(/[()]/g,"").trim().replace(/\s+/g," ");
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const okAns=(f,v)=>{const p=norm(v).split("/").map(x=>x.trim());return p[0]!==""&&p.every(x=>f.a.includes(x))};
+let xp=0,S={};
+
+const CAT={D:"alle drei Formen verschieden",Z:"Zwilling: 2. und 3. Form sind gleich",T:"Drilling: alle drei Formen sind gleich",S:"Sandwich: 1. und 3. Form sind gleich"};
+const disp=(v,k)=>v[0]==="wake (up)"?["","woke (up)","woken (up)"][k]:v[k].replace(/\|/g," / ");
+function pool(z){
+  if(z===0)return IRR.map(v=>({cat:v[4],q:`<b>${v[0]}</b> <small>(${v[3]})</small>`,f:[{l:"Past Simple (2. Form)",a:v[1].split("|"),s:disp(v,1)},{l:"Past Participle (3. Form)",a:v[2].split("|"),s:disp(v,2)}],tip:`Unregelmäßig (${CAT[v[4]]})! Lerne alle drei Formen: <b>${v[0]} – ${disp(v,1)} – ${disp(v,2)}</b>`}));
+  if(z===2)return REG.map(v=>({q:`<b>${v[0]}</b> <small>(${v[3]})</small>`,f:[{l:"Past Simple",a:[v[1]]},{l:"Past Participle",a:[v[1]]}],tip:RTIP[v[2]]+` → <b>${v[1]}</b>`})).concat(SP.map(v=>({q:`<b>${v[0]}</b> <small>(${v[3]}) · zwei Formen möglich!</small>`,f:[{l:"Past Simple",a:[v[1],v[2]],s:v[1]+" / "+v[2]},{l:"Past Participle",a:[v[1],v[2]],s:v[1]+" / "+v[2]}],tip:`Hier sind <b>beide</b> Formen richtig: <b>${v[1]}</b> (amerikanisch) und <b>${v[2]}</b> (britisch).`})));
+  return (z===1?CTX:MIX).map(s=>({q:esc(s[0]),f:[{l:"Welches Wort fehlt?",a:[s[1]]}],tip:(s[2]==="ps"?"<b>Past Simple</b> (2. Form), es geht um einen abgeschlossenen Zeitpunkt.":"<b>Present Perfect</b>: have/has + 3. Form.")+` → <b>${s[1]}</b>`}));
+}
+function z1Rounds(){const P=pool(0),L=[].concat(...[..."TSZD"].map(c=>P.filter(t=>t.cat===c))),k=L.length%6,tail=k?L.slice(-k):[],pad=k?["lie","wake (up)","hang","hide","ride","lay"].map(n=>P.find(t=>t.q.indexOf("<b>"+n+"</b>")===0)).filter(t=>!tail.includes(t)).slice(0,6-k):[],A=L.concat(pad);return Array.from({length:A.length/6},(_,i)=>A.slice(i*6,i*6+6))}
+const sol=t=>t.f.map(f=>f.s||f.a.join(" / ")).join(" + ");
+
+function setHead(){
+  $("#xp").textContent=`⚡ ${xp} XP`;
+  const done=S.z||0,part=S.cur&&S.phase==="practice"?((S.rounds?(S.rd*6+S.cur.i)/(S.rounds.length*6):S.cur.i/S.cur.list.length))*.5:S.phase==="check"||S.phase==="result"||S.phase==="repair"?.5:0;
+  $("#prog").style.width=Math.min(100,(done+part)*25)+"%";
+}
+function show(html){app.innerHTML=`<div class="card">${html}</div>`;setHead();window.scrollTo(0,0);const i=app.querySelector("input");if(i)i.focus()}
+
+// ---------- SCREENS ----------
+function home(){
+  S={z:0,phase:"home"};
+  show(`<h1>⏳ TIME-WARP ⚡<br>The Verb Repair Mission</h1>
+  <div class="story">“Warning! The time machine is broken! The verbs are scrambled and the engine can't travel through time. We need a hero to repair it!” 🔧</div>
+  <p>Meistere <b>4 Zonen</b>, löse die <b>Portal-Checks</b> und repariere die Zeitmaschine.</p>
+  <p>💾 <b>Speicherstand:</b> Nach jeder Zone bekommst du einen <b>Code</b> (z. B. <code>TIME-WARP-02</code>). Schreib ihn auf! Beim nächsten Mal gibst du ihn hier ein und machst genau dort weiter.</p>
+  <button id="a">🆕 Neues Abenteuer</button><button class="alt" id="b">🔑 Ich habe einen Code</button><div id="cbox"></div>`);
+  $("#a").onclick=()=>{xp=0;zoneIntro(0)};
+  $("#b").onclick=()=>{$("#cbox").innerHTML=`<label for="ci">Dein Code:</label><input id="ci" placeholder="TIME-WARP-01" autocomplete="off" autocapitalize="characters" spellcheck="false"><button id="go">Los! 🚀</button><div id="err" class="dim"></div>`;$("#ci").focus();
+    const run=()=>{const m=$("#ci").value.toUpperCase().match(/TIME-WARP-(0[1-4]|1[A-D])\b/);if(!m){$("#err").textContent="❌ Diesen Code kenne ich nicht. Prüfe die Schreibweise (z. B. TIME-WARP-02).";return}
+      const c=m[1];if(/^1[A-D]$/.test(c)){const r=3*(c.charCodeAt(1)-64);xp=r*10;return zoneIntro(0,true,r)}
+      const n=+c.slice(1);xp=n*100;n===4?victory():(S.z=n,zoneIntro(n,true))};
+    $("#go").onclick=run;$("#ci").onkeydown=e=>{if(e.key==="Enter")run()}};
+}
+function zoneIntro(z,resumed,rd0){
+  S={z,phase:"intro",rd0:rd0||0};const Zn=Z[z];
+  show(`<span class="tag">Zone ${z+1} von 4</span><h2>${Zn.e} ${Zn.n}</h2>${resumed?`<p>✅ Code erkannt! Willkommen zurück, Zeitreisender. Weiter geht's mit Zone ${z+1}${rd0?", Runde "+(rd0+1):""}.</p>`:""}
+  <div class="story">${Zn.st}</div><p>${Zn.ins}</p><button id="n">Los geht's! 🚀</button>`);
+  $("#n").onclick=()=>{if(z===0){S.rounds=z1Rounds();S.check=shuffle(pool(0)).slice(0,5)}else{const p=shuffle(pool(z));S.rounds=[0,1,2].map(i=>p.slice(i*6,i*6+6));S.check=p.slice(18,23)}S.rd=S.rd0;runRound()};
+}
+function runList(mode,list,after){
+  S.phase=mode;S.cur={mode,list,i:0,res:[]};S.after=after;nextTask();
+}
+function nextTask(){
+  const c=S.cur;
+  if(c.i>=c.list.length){return c.mode==="practice"?(S.rd<S.rounds.length-1?roundDone():checkIntro()):c.mode==="check"?result():codeScreen()}
+  const t=c.list[c.i],lab={practice:"Training 🎯",check:"Portal-Check 🌀",repair:"Matrix-Reparatur 🔧"}[c.mode];
+  show(`<span class="tag">${lab}${c.mode==="practice"?" Runde "+(S.rd+1)+"/"+S.rounds.length:""} · Aufgabe ${c.i+1}/${c.list.length}</span>
+  ${c.mode==="repair"?`<div class="fb">💡 ${t.tip}</div>`:""}
+  <div class="q">${t.q}</div>
+  ${t.f.map((f,k)=>`<label for="f${k}">${f.l}</label><input id="f${k}" class="ans" autocomplete="off" autocapitalize="off" spellcheck="false">`).join("")}
+  <div id="fb"></div><button id="ok">${c.mode==="check"?"Weiter":"Prüfen"}</button>`);
+  const ins=[...app.querySelectorAll(".ans")];
+  ins.forEach((el,k)=>el.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();k<ins.length-1?ins[k+1].focus():$("#ok").click()}});
+  $("#ok").onclick=()=>submit(t,ins);
+}
+function submit(t,ins){
+  const c=S.cur,res=t.f.map((f,k)=>okAns(f,ins[k].value)),all=res.every(Boolean);
+  if(all){xp+=c.mode==="check"?20:10;if(c.mode==="practice")c.ok=(c.ok||0)+1}
+  if(c.mode==="check"){c.res.push({t,all});c.i++;return nextTask()}
+  ins.forEach((el,k)=>{el.disabled=true;el.classList.add(res[k]?"ok":"no")});
+  $("#fb").innerHTML=all?`<div class="fb ok">✅ Richtig! +10 XP ⚡</div>`:`<div class="fb no">❌ Fast! Richtig wäre: <b>${esc(sol(t))}</b><br><span class="dim">${t.tip}</span></div>`;
+  setHead();const b=$("#ok");b.textContent="Weiter";b.onclick=()=>{c.i++;nextTask()};b.focus();
+}
+function runRound(){runList("practice",shuffle(S.rounds[S.rd]))}
+function roundDone(){
+  const n=S.rd+1,N=S.rounds.length,ok=S.cur.ok||0,code=S.z===0&&n%3===0?"TIME-WARP-1"+"ABCD"[n/3-1]:null;
+  show(`<h2>✅ Runde ${n} von ${N} geschafft!</h2><p>${ok} von 6 gleich richtig. Noch ${N-n} Runde${N-n>1?"n":""} bis zum Portal-Check.</p>
+  ${code?`<p>💾 Zwischen-Code (aufschreiben! ✏️):</p><div class="code">${code}</div><p class="dim">Damit startest du später wieder bei Runde ${n+1}.</p>`:""}
+  <button id="n">Weiter ⚡</button>`);
+  $("#n").onclick=()=>{S.rd++;runRound()};
+}
+function checkIntro(){
+  S.phase="checkintro";
+  show(`<span class="tag">Portal-Check 🌀</span><h2>${Z[S.z].e} Das Portal leuchtet auf!</h2>
+  <div class="story">The portal to the next zone is open, but it needs 5 correct answers to stay stable.</div>
+  <p>5 Aufgaben. Du siehst die Auswertung erst am Ende. Viel Erfolg! ⚡</p><button id="n">Portal-Check starten</button>`);
+  $("#n").onclick=()=>runList("check",S.check);
+}
+function result(){
+  S.phase="result";const r=S.cur.res,n=r.filter(x=>x.all).length;S.wrong=r.filter(x=>!x.all).map(x=>x.t);
+  const praise=n===5?"🏆 Perfekt! Fehlerfrei, du bist ein Verb-Profi!":n>=3?"💪 Stark! Das Portal ist stabil. Die Fehler schauen wir uns gleich an.":"🔧 Gute Arbeit, dranzubleiben! Die Matrix-Reparatur hilft dir jetzt weiter.";
+  show(`<h2>📊 Auswertung: ${n} von 5</h2><p>${praise}</p><ul class="res">${r.map(x=>`<li>${x.all?"✅":"❌"} ${x.t.q}<br><span class="dim">${x.all?"Richtig":"Richtig wäre: <b>"+esc(sol(x.t))+"</b>"}</span></li>`).join("")}</ul>
+  <button id="n">${S.wrong.length?"🔧 Matrix-Reparatur starten":"Weiter ⚡"}</button>`);
+  $("#n").onclick=()=>S.wrong.length?runList("repair",shuffle(S.wrong)):codeScreen();
+}
+function codeScreen(){
+  S.phase="code";const n=S.z+1,code="TIME-WARP-0"+n;
+  show(`<h2>🎉 Zone ${n} geschafft!</h2><p>${S.wrong&&S.wrong.length?"Die Matrix ist repariert 🔧":"Das Tor zur nächsten Zone öffnet sich ⚡"}</p>
+  <p>Dein Speichercode (aufschreiben! ✏️):</p><div class="code" id="cd">${code}</div>
+  <p class="dim">Beim nächsten Start: „Ich habe einen Code“ wählen und diesen Code eingeben.</p>
+  <button id="n">${n<4?"Weiter zu Zone "+(n+1)+" 🚀":"Zeitmaschine starten ⏳"}</button><button class="alt" id="cp">📋 Code kopieren</button>`);
+  $("#n").onclick=()=>{S.z=n;n<4?zoneIntro(n):victory()};
+  $("#cp").onclick=()=>{try{navigator.clipboard.writeText(code);$("#cp").textContent="✅ Kopiert"}catch(e){$("#cp").textContent="Bitte abschreiben ✏️"}};
+}
+function victory(){
+  S={z:4,phase:"end"};
+  show(`<h1>🚀 Mission complete!</h1><div class="story">The engine hums. The lights flash. The time machine works again, thanks to you!</div>
+  <p>⏳ Du hast alle 4 Zonen gemeistert und kennst jetzt regelmäßige und unregelmäßige Verben wie ein Profi. <span class="xp">⚡ ${xp} XP</span></p>
+  <p class="dim">Dein Abschluss-Code: <b>TIME-WARP-04</b></p><button id="n">Neues Abenteuer 🔁</button>`);
+  $("#prog").style.width="100%";$("#n").onclick=home;
+}
+home();
+</script>
+</body>
+</html>
